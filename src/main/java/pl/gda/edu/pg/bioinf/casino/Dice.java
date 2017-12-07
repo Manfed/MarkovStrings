@@ -12,6 +12,9 @@ import static java.util.stream.Collectors.toMap;
 public class Dice {
     private static final int MIN_DICE_RESULT = 1;
     private static final int MAX_DICE_RESULT = 6;
+    private static final int DICE_STATES_NUMBER = 6;
+    private static final int MAX_PROBABILITY_VALUE = 1;
+    private static final double DEFAULT_PROBABILITY = 1/6;
 
     private final Map<Integer, Double> probabilityOfResults;
     private final double probabilityOfDiceSwitch;
@@ -19,7 +22,7 @@ public class Dice {
     public Dice(List<Double> probabilities, double probabilityOfDiceSwitch) {
         double sumOfProbabilities = probabilities.stream().mapToDouble(Double::doubleValue).sum();
 
-        if (probabilities == null || probabilities.size() != 6 || sumOfProbabilities != 1) {
+        if (probabilities.size() != DICE_STATES_NUMBER || sumOfProbabilities != MAX_PROBABILITY_VALUE) {
             throw new IllegalArgumentException("Not valid probabilities");
         }
 
@@ -34,7 +37,7 @@ public class Dice {
     }
 
     public static Dice createFairDice(double probabilityOfSwitch) {
-        List<Double> probabilities = Collections.nCopies(MAX_DICE_RESULT, 1/6.0);
+        List<Double> probabilities = Collections.nCopies(MAX_DICE_RESULT, DEFAULT_PROBABILITY);
 
         return new Dice(probabilities, probabilityOfSwitch);
     }
