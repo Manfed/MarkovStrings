@@ -11,8 +11,14 @@ public class Croupier {
         this.fairDiceInGame = fairDiceInGame;
     }
 
+    public Integer performRound() {
+        Integer result = rollDice();
+        swapDices();
 
-    public void swapDices() {
+        return result;
+    }
+
+    private void swapDices() {
         boolean shouldSwapDices;
         if (fairDiceInGame) {
             shouldSwapDices = fairDice.shouldSwitchDice();
@@ -25,7 +31,7 @@ public class Croupier {
         }
     }
 
-    public Integer rollDice() {
+    private Integer rollDice() {
         if (fairDiceInGame) {
             return fairDice.roll();
         }
