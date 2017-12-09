@@ -18,8 +18,10 @@ public class Dice {
 
     private final Map<Integer, Double> probabilityOfResults;
     private final double probabilityOfDiceSwitch;
+    private final List<Double> probabilities;
 
     public Dice(List<Double> probabilities, double probabilityOfDiceSwitch) {
+        this.probabilities = probabilities;
         double sumOfProbabilities = probabilities.stream().mapToDouble(Double::doubleValue).sum();
 
         if (probabilities.size() != DICE_STATES_NUMBER || sumOfProbabilities != MAX_PROBABILITY_VALUE) {
@@ -61,5 +63,21 @@ public class Dice {
      */
     public boolean shouldSwitchDice() {
         return Math.random() < probabilityOfDiceSwitch;
+    }
+
+    /**
+     * Getter for probabilityOfDiceSwitch
+     * @return probabilityOfDiceSwitch
+     */
+    public double getProbabilityOfDiceSwitch() {
+        return probabilityOfDiceSwitch;
+    }
+
+    /**
+     * Getter for probability
+     * @return probability
+     */
+    public List<Double> getProbabilities() {
+        return probabilities;
     }
 }
