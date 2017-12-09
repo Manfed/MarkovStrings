@@ -14,7 +14,7 @@ public class Dice {
     private static final int MAX_DICE_RESULT = 6;
     private static final int DICE_STATES_NUMBER = 6;
     private static final int MAX_PROBABILITY_VALUE = 1;
-    private static final double DEFAULT_PROBABILITY = 1/6;
+    private static final double DEFAULT_PROBABILITY = 1.0/6.0;
 
     private final Map<Integer, Double> probabilityOfResults;
     private final double probabilityOfDiceSwitch;
