@@ -5,6 +5,7 @@ import pl.gda.edu.pg.bioinf.casino.Croupier;
 import pl.gda.edu.pg.bioinf.casino.Dice;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -18,7 +19,9 @@ public class Application {
         boolean startWithFairDice;
 
         fairDice = getArgumentsAndCreateFairDice(sc);
+        if (fairDice == null) return;
         unfairDice = getArgumentsAndCreateUnfairDice(sc);
+        if (unfairDice == null) return;
 
         //number of rounds
         System.out.println("Podaj liczbę losowań: ");
@@ -36,25 +39,36 @@ public class Application {
     }
 
     public static Dice getArgumentsAndCreateFairDice(Scanner sc) {
+
         System.out.println("Podaj prawdopodobieństwo zmiany kostki z uczciwej na fałszywą: ");
-        double probabilityOfFairDiceSwitch = sc.nextDouble();
+        Double probabilityOfFairDiceSwitch;
+        try {
+            probabilityOfFairDiceSwitch = sc.nextDouble();
+        } catch (InputMismatchException e) {
+            System.out.println("Podano nieprawidłową wartość");
+            return null;
+        }
 
-        Dice fairDice = Dice.createFairDice(probabilityOfFairDiceSwitch);
-
-        return fairDice;
+        return Dice.createFairDice(probabilityOfFairDiceSwitch);
     }
 
     public static Dice getArgumentsAndCreateUnfairDice(Scanner sc) {
         List<Double> unfairDiceProbabilityList = new ArrayList<>();
+        double probabilityOfUnfairDiceSwitch;
 
         System.out.println("Podaj prawdopodobieństwo zmiany kostki z nieuczciwej na uczciwą: ");
-        double probabilityOfUnfairDiceSwitch = sc.nextDouble();
-        System.out.println("Podaj prawdopodobieństwo wyrzucenia każdej wartości na kostce, zaczynając od 1: ");
-        for (int i = 0; i < 6; i++) {
-            unfairDiceProbabilityList.add(sc.nextDouble());
-        }
-        Dice unfairDice = new Dice (unfairDiceProbabilityList, probabilityOfUnfairDiceSwitch);
+        try {
+            probabilityOfUnfairDiceSwitch = sc.nextDouble();
 
-        return unfairDice;
+            System.out.println("Podaj prawdopodobieństwo wyrzucenia każdej wartości na kostce, zaczynając od 1: ");
+            for (int i = 0; i < 6; i++) {
+                unfairDiceProbabilityList.add(sc.nextDouble());
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Podano nieprawidłową wartość");
+            return null;
+        }
+
+        return new Dice (unfairDiceProbabilityList, probabilityOfUnfairDiceSwitch);
     }
 }
