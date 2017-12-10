@@ -73,15 +73,35 @@ public class ViterbiAlgorithm {
 
     public void createSequence() {
         initializeHMMStates();
+        forAllSequenceFindBestEdgeAndRemember();
     }
 
     private void initializeHMMStates() {
-        wagesMatrix = new double[NUMBER_OF_STATES][NUMBER_OF_STATES];
+        wagesMatrix = new double[NUMBER_OF_STATES][observableSequenceLength+1];
         pathsMatrix = new double[NUMBER_OF_STATES][NUMBER_OF_SYMBOLS];
         for (int i = 0; i < NUMBER_OF_STATES; i++) {    //for every state
             wagesMatrix[i][0] = stateEmissionMatrix[i][observableSequence.get(0) - 1] * startProbabilityInState[i];
             pathsMatrix[i][0] = 0;
         }
+    }
+
+    private void forAllSequenceFindBestEdgeAndRemember() {
+        for (int t = 1; t < observableSequenceLength; t++) {
+            for (int j = 0; j < NUMBER_OF_STATES; j++) {
+                wagesMatrix[j][t] = stateEmissionMatrix[j][observableSequence.get(t) - 1] * maximum(t, j);
+            }
+        }
+    }
+
+    private double maximum(int t, int j) {
+        double max = 0.0;
+        for (int i = 0; i < NUMBER_OF_STATES; i++) {
+            double var = wagesMatrix[i][t-1] * changingHMMStateMatrix[i][j];
+            if (var > max) {
+                max = var;
+            }
+        }
+        return max;
     }
 
     public static void main(String args[]) {
