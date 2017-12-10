@@ -11,12 +11,12 @@ public class ViterbiAlgorithm {
     private static final int NUMBER_OF_SYMBOLS = 6;
     private static final double MAX_PROBABILITY = 1.0;
     private double[] startProbabilityInState;
-    double[][] changingHMMStateMatrix;
-    double[][] stateEmissionMatrix;
-    double[][] wagesMatrix;
-    double[][] pathsMatrix;
+    private double[][] changingHMMStateMatrix;
+    private double[][] stateEmissionMatrix;
+    private double[][] wagesMatrix;
+    private double[][] pathsMatrix;
 
-    ViterbiAlgorithm(int numberOfRounds, State startState, Dice fairDice, Dice unfairDice, List<Integer> observableSequence) {
+    public ViterbiAlgorithm(int numberOfRounds, State startState, Dice fairDice, Dice unfairDice, List<Integer> observableSequence) {
         observableSequenceLength = numberOfRounds;
         this.observableSequence = observableSequence;
         this.observableSequenceLength = observableSequence.size();
