@@ -26,7 +26,6 @@ public class SuffixAlgorithm {
 
     private Map<State, List<Double>> initProbabilities(Dice fairDice, Dice loadedDice) {
         return Arrays.stream(State.values())
-                .collect(toMap(Function.identity(), state -> state.compareTo(State.FAIR_DICE) == 0 ?
-                        fairDice.getProbabilities() : loadedDice.getProbabilities()));
+                .collect(toMap(Function.identity(), state -> Arrays.asList(1.0)));
     }
 }
