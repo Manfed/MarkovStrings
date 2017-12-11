@@ -28,4 +28,16 @@ public class SuffixAlgorithm {
         return Arrays.stream(State.values())
                 .collect(toMap(Function.identity(), state -> Arrays.asList(1.0)));
     }
+
+    public Dice getFairDice() {
+        return fairDice;
+    }
+
+    public Dice getLoadedDice() {
+        return loadedDice;
+    }
+
+    public List<Integer> getObservedSequence() {
+        return observedSequence;
+    }
 }
