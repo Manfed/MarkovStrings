@@ -96,11 +96,13 @@ public class Application {
             }
         }
 
-        System.out.println("Rezultat działania algorytmu Viterbiego: ");
         ViterbiAlgorithm va = new ViterbiAlgorithm(numberOfRounds, fairDice, unfairDice, results, fairDiceStartProbability);
+        List <String> casinoDices = croupier.getDices();
         List <String> viterbiResults = va.createSequence();
+        System.out.println("Rezultat działania algorytmu Viterbiego: ");
+        System.out.println("liczba oczek na kostce : rzeczywistość : Viterbi");
         for (int i = 0; i < results.size(); i++) {
-            System.out.println(results.get(i) + " : " + viterbiResults.get(i));
+            System.out.println(results.get(i) + " : " +casinoDices.get(i) + " : " + viterbiResults.get(i));
         }
     }
 
