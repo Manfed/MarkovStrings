@@ -14,7 +14,6 @@ public class ViterbiAlgorithm {
     private double[][] changingHMMStateMatrix;
     private double[][] stateEmissionMatrix;
     private double[][] deltaMatrix;
-    private State maximumState = null;
 
     public ViterbiAlgorithm(int numberOfRounds, Dice fairDice, Dice unfairDice, List<Integer> observableSequence, double fairStartProbability) {
         observableSequenceLength = numberOfRounds;
@@ -114,7 +113,6 @@ public class ViterbiAlgorithm {
             double var = deltaMatrix[i][t-1] * changingHMMStateMatrix[i][j];
             if (var > max) {
                 max = var;
-                maximumState = s;
             }
         }
         return max;
