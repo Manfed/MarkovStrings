@@ -14,8 +14,6 @@ public class ViterbiAlgorithm {
     private double[][] changingHMMStateMatrix;
     private double[][] stateEmissionMatrix;
     private double[][] deltaMatrix;
-    private State[][] pathsMatrix;
-    private State maximumState = null;
 
     public ViterbiAlgorithm(int numberOfRounds, Dice fairDice, Dice unfairDice, List<Integer> observableSequence, double fairStartProbability) {
         observableSequenceLength = numberOfRounds;
@@ -72,17 +70,16 @@ public class ViterbiAlgorithm {
         }
     }
 
-    public void createSequence() {
+    public List<String> createSequence() {
         initializeHMMStates();
         forAllSequenceFindBestEdgeAndRemember();
+        return getTheBestPath();
     }
 
     private void initializeHMMStates() {
         deltaMatrix = new double[NUMBER_OF_STATES][observableSequenceLength];
-        pathsMatrix = new State[NUMBER_OF_STATES][observableSequenceLength];
         for (int i = 0; i < NUMBER_OF_STATES; i++) {    //for every state
             deltaMatrix[i][0] = stateEmissionMatrix[i][observableSequence.get(0) - 1] * startProbabilityInState[i];
-            pathsMatrix[i][0] = null;
         }
     }
 
@@ -90,12 +87,27 @@ public class ViterbiAlgorithm {
         for (int t = 1; t < observableSequenceLength; t++) {
             for (int j = 0; j < NUMBER_OF_STATES; j++) {
                 deltaMatrix[j][t] = stateEmissionMatrix[j][observableSequence.get(t) - 1] * maximum(t, j);
-                if (maximumState != null) {
-                    pathsMatrix[j][t] = maximumState;
-                    maximumState = null;
-                }
             }
         }
+    }
+
+    private List<String> getTheBestPath() {
+        Stack<State> stateStack = new Stack<>();
+        List<String> results = new ArrayList<>();
+
+        for (int i = observableSequenceLength - 1; i >= 0; i--) {
+            int fairDiceNumber = State.FAIR_DICE.getNumber();
+            int unfairDiceNumber = State.UNFAIR_DICE.getNumber();
+            stateStack.push(deltaMatrix[fairDiceNumber][i] > deltaMatrix[unfairDiceNumber][i]
+                    ? State.FAIR_DICE : State.UNFAIR_DICE);
+        }
+
+        while(!stateStack.empty()) {
+            results.add(stateStack.pop().toString());
+            //System.out.println(stateStack.pop());
+        }
+
+        return results;
     }
 
     private double maximum(int t, int j) {
@@ -105,7 +117,6 @@ public class ViterbiAlgorithm {
             double var = deltaMatrix[i][t-1] * changingHMMStateMatrix[i][j];
             if (var > max) {
                 max = var;
-                maximumState = s;
             }
         }
         return max;
@@ -114,7 +125,7 @@ public class ViterbiAlgorithm {
     public static void main(String args[]) {
         Dice fair = Dice.createFairDice(0.1);
         Dice unfair = new Dice(Arrays.asList(0.1, 0.1, 0.1, 0.1, 0.1, 0.5), 0.2);
-        List<Integer> observableSequence = Arrays.asList(3,2,4,6,6,6,1);
+        List<Integer> observableSequence = Arrays.asList(3,6,6,6,4,3,3,3,2,2,1,2,5,6,3);
         ViterbiAlgorithm va = new ViterbiAlgorithm(5, fair, unfair, observableSequence, 0.4);
         va.createSequence();
     }

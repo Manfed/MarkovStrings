@@ -7,11 +7,14 @@ package pl.gda.edu.pg.bioinf;
 * - prawdopodobieństwa wyrzucenia każdej wartości na kostce, zaczynając od 1 (probability X)
 * - liczba losowań (rounds count)
 * - rozpoczynanie od uczciwej kostki (t/n) (start dice)
+ *
+ * - prawdopodobieństwo rozpoczęcia gry kostką uczciwą (fair start)
 * **/
 
 import pl.gda.edu.pg.bioinf.casino.Casino;
 import pl.gda.edu.pg.bioinf.casino.Croupier;
 import pl.gda.edu.pg.bioinf.casino.Dice;
+import pl.gda.edu.pg.bioinf.casino.ViterbiAlgorithm;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,6 +32,7 @@ public class Application {
         int numberOfRounds;
         boolean startWithFairDice;
         boolean inputFromFile;
+        double fairDiceStartProbability = 0.0;
 
         // input data
         System.out.println("Czy chcesz pobrać dane z pliku (T), czy podać ręcznie (N)?");
@@ -52,6 +56,9 @@ public class Application {
             unfairDice = new Dice (unfairDiceProbabilityList, unFairProb);
             numberOfRounds = Integer.parseInt(content.get("rounds count"));
             startWithFairDice = content.get("start dice").trim().equalsIgnoreCase("fair");
+
+            fairDiceStartProbability = Double.parseDouble(content.get("fair start"));
+
         } else {
             fairDice = getArgumentsAndCreateFairDice(sc);
             if (fairDice == null) return;
@@ -76,6 +83,26 @@ public class Application {
         System.out.println("Wyniki rzutów kostką: ");
         for (int i = 1; i <= 6; i++) {
             printCountOfNumber(i, results);
+        }
+
+        // Viterbi
+        if (!inputFromFile) {
+            System.out.println("Podaj prawdopodobieństwo rozpoczęcia gry kostką uczciwą: ");
+            try {
+                fairDiceStartProbability = sc.nextDouble();
+            } catch (InputMismatchException e) {
+                System.out.println("Podano nieprawidłową wartość");
+                return;
+            }
+        }
+
+        ViterbiAlgorithm va = new ViterbiAlgorithm(numberOfRounds, fairDice, unfairDice, results, fairDiceStartProbability);
+        List <String> casinoDices = croupier.getDices();
+        List <String> viterbiResults = va.createSequence();
+        System.out.println("Rezultat działania algorytmu Viterbiego: ");
+        System.out.println("liczba oczek na kostce : rzeczywistość : Viterbi");
+        for (int i = 0; i < results.size(); i++) {
+            System.out.println(results.get(i) + " : " +casinoDices.get(i) + " : " + viterbiResults.get(i));
         }
     }
 

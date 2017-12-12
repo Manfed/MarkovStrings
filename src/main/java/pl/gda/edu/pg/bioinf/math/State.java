@@ -13,4 +13,15 @@ public enum State {
     public int getNumber() {
         return number;
     }
+
+    @Override
+    public String toString() {
+        switch (this) {
+            case FAIR_DICE:
+                return "Fair ";
+            case UNFAIR_DICE:
+                return  "Unfair ";
+        }
+        return null;
+    }
 }
