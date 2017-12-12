@@ -31,7 +31,7 @@ public class Application {
 
     public static void main(String[] args) {
         Dice fairDice, unfairDice;
-        int numberOfRounds, viterbiDicesCount;
+        int numberOfRounds, viterbiDicesCount = 0;
         boolean startWithFairDice;
         boolean inputFromFile;
         List<Integer> observableSequence = new ArrayList<>();
@@ -110,7 +110,8 @@ public class Application {
             }
         }
 
-        ViterbiAlgorithm va = new ViterbiAlgorithm(numberOfRounds, fairDice, unfairDice, observableSequence, fairDiceStartProbability);
+        System.out.println("Rezultat działania algorytmu Viterbiego: ");
+        ViterbiAlgorithm va = new ViterbiAlgorithm(viterbiDicesCount, fairDice, unfairDice, observableSequence, fairDiceStartProbability);
         va.createSequence();
     }
 
