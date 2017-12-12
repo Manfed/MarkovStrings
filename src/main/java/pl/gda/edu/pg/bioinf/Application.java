@@ -14,7 +14,10 @@ package pl.gda.edu.pg.bioinf;
 import pl.gda.edu.pg.bioinf.casino.Casino;
 import pl.gda.edu.pg.bioinf.casino.Croupier;
 import pl.gda.edu.pg.bioinf.casino.Dice;
+import pl.gda.edu.pg.bioinf.casino.PrefixAlgorithm;
+import pl.gda.edu.pg.bioinf.casino.SuffixAlgorithm;
 import pl.gda.edu.pg.bioinf.casino.ViterbiAlgorithm;
+import pl.gda.edu.pg.bioinf.math.State;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -104,6 +107,25 @@ public class Application {
         for (int i = 0; i < results.size(); i++) {
             System.out.println(results.get(i) + " : " +casinoDices.get(i) + " : " + viterbiResults.get(i));
         }
+
+        //Prefix
+        PrefixAlgorithm prefixAlgorithm = new PrefixAlgorithm(fairDice, unfairDice, results);
+        //Start kostką uczciwą
+        prefixAlgorithm.calculateProbability(State.FAIR_DICE);
+        System.out.println("Macierz prawdopodobieństw dla algorytmu prefiksowego (kostka uczciwa):");
+        System.out.println(Arrays.deepToString(prefixAlgorithm.getProbabilityMatrix()));
+
+        prefixAlgorithm = new PrefixAlgorithm(fairDice, unfairDice, results);
+        //Start kostką nieuczciwą
+        prefixAlgorithm.calculateProbability(State.UNFAIR_DICE);
+        System.out.println("Macierz prawdopodobieństw dla algorytmu prefiksowego (kostka nieuczciwa):");
+        System.out.println(Arrays.deepToString(prefixAlgorithm.getProbabilityMatrix()));
+
+        //Suffix
+        SuffixAlgorithm suffixAlgorithm = new SuffixAlgorithm(fairDice, unfairDice, results);
+
+        System.out.println("Macierz prawdopodobieństw dla algorytmu sufiksowego (kostka uczciwa, start w połowie listy wynikowej):");
+        suffixAlgorithm.calculateProbability(results.size() / 2, State.FAIR_DICE);
     }
 
     private static void printCountOfNumber(final Number num, final List<Integer> list) {

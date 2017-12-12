@@ -30,14 +30,23 @@ public class PrefixAlgorithm {
 
         for (int i = 1; i < observedSequence.size(); i++) {
             for(State state: State.values()) {
-                probabilityMatrix[state.getNumber()][i] =
-                        sumOfColumn(i - 1) *
-                        probabilityOfEmission(state, observedSequence.get(i)) *
-                        probabilityOfStateChange(state);
+                probabilityMatrix[state.getNumber()][i] = computeNextProbability(i, state);
             }
         }
 
-        return sumOfColumn(observedSequence.size() - 1);
+        final double probability = sumOfColumn(observedSequence.size() - 1);
+        System.out.println("Prefix: Obliczone prawdopodobieństwo: " + probability);
+        return probability;
+    }
+
+    private double computeNextProbability(int index, State state) {
+        double prob = .0;
+        for (State stateX : State.values()) {
+            prob += sumOfColumn(index - 1) *
+                    probabilityOfEmission(state, observedSequence.get(index)) *
+                    (state.equals(stateX) ? 1 - probabilityOfStateChange(state) : probabilityOfStateChange(state));
+        }
+        return prob;
     }
 
     private double sumOfColumn(int columnNumber) {

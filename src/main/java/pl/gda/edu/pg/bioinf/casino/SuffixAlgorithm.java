@@ -15,7 +15,6 @@ public class SuffixAlgorithm {
 
     //Probability of every roll state
     private PrefixAlgorithm prefixAlgorithm;
-    private List<Double> probabilityOfStates;
 
     private double[][] probabilityOfSuffix;
 
@@ -25,7 +24,6 @@ public class SuffixAlgorithm {
         this.observedSequence = observedSequence;
         this.probabilityOfSuffix = new double[State.values().length][observedSequence.size()];
         this.prefixAlgorithm = new PrefixAlgorithm(fairDice, loadedDice, observedSequence);
-        this.probabilityOfStates = new ArrayList<>();
     }
 
     public double calculateProbability(int startIndex, State startState) {
@@ -49,14 +47,19 @@ public class SuffixAlgorithm {
         computeProbableStateOfEveryElement(startState,
                 probabilityOfGivenSuffixWhenParticularStateOnIndex);
 
+        System.out.println("Algorytm sufiksowy - prawdopodbieństwo: " + probabilityOfGivenSuffixWhenParticularStateOnIndex);
         return probabilityOfGivenSuffixWhenParticularStateOnIndex;
 
     }
 
     private double computeNextProbability(int index, State state) {
-        return getDiceSwitchProbability(state) *
-                getEmissionProbability(state, index + 1) *
-                probabilityOfSuffix[state.getNumber()][index + 1];
+        double prob = .0;
+        for (State stateX : State.values()) {
+            prob += getEmissionProbability(state, observedSequence.get(index + 1) - 1) *
+                    probabilityOfSuffix[state.getNumber()][index + 1] *
+                    (stateX.equals(state) ? 1 - getDiceSwitchProbability(state) : getDiceSwitchProbability(state));
+        }
+        return prob;
 
     }
 
@@ -100,7 +103,7 @@ public class SuffixAlgorithm {
                             probabilityOfSuffix[startState.getNumber()][i]) /
                             probability);
 
-            System.out.println(i + 1 + ": " + probabilitiesOfStates.get(i));
+            //System.out.println(i + 1 + ": " + probabilitiesOfStates.get(i));
         }
     }
 
