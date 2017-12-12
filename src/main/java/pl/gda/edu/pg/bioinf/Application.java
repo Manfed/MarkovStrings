@@ -68,12 +68,17 @@ public class Application {
         //creating cassino and play rounds
         Croupier croupier = new Croupier(fairDice, unfairDice, startWithFairDice);
         Casino casino = new Casino(croupier);
-        casino.playNRounds(numberOfRounds);
+        List <Integer> results = casino.playNRounds(numberOfRounds);
+        for (Integer r :
+                results) {
+            System.out.println(r);
+        }
     }
 
     public static Map<String, String> getInputDataFromFile () {
         System.out.println("Podaj ścieżkę do pliku wejściowego: ");
-        Path inputFilePath = Paths.get(sc.next());
+        String rawPath = sc.next();
+        Path inputFilePath = Paths.get(rawPath.replaceAll("\"", ""));
         Map<String, String> content = new HashMap<>();
 
         try {
