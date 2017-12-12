@@ -70,10 +70,10 @@ public class ViterbiAlgorithm {
         }
     }
 
-    public void createSequence() {
+    public List<String> createSequence() {
         initializeHMMStates();
         forAllSequenceFindBestEdgeAndRemember();
-        getTheBestPath();
+        return getTheBestPath();
     }
 
     private void initializeHMMStates() {
@@ -91,8 +91,9 @@ public class ViterbiAlgorithm {
         }
     }
 
-    private void getTheBestPath() {
+    private List<String> getTheBestPath() {
         Stack<State> stateStack = new Stack<>();
+        List<String> results = new ArrayList<>();
 
         for (int i = observableSequenceLength - 1; i >= 0; i--) {
             int fairDiceNumber = State.FAIR_DICE.getNumber();
@@ -102,8 +103,11 @@ public class ViterbiAlgorithm {
         }
 
         while(!stateStack.empty()) {
-            System.out.println(stateStack.pop());
+            results.add(stateStack.pop().toString());
+            //System.out.println(stateStack.pop());
         }
+
+        return results;
     }
 
     private double maximum(int t, int j) {

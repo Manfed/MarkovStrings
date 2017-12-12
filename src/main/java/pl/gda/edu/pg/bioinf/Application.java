@@ -8,8 +8,6 @@ package pl.gda.edu.pg.bioinf;
 * - liczba losowań (rounds count)
 * - rozpoczynanie od uczciwej kostki (t/n) (start dice)
  *
- * - liczba rzutów kostką dla alg. Viterbi (viterbi number)
- * - rzuty kostką dla alg. Viterbi (viterbi dices)
  * - prawdopodobieństwo rozpoczęcia gry kostką uczciwą (fair start)
 * **/
 
@@ -31,10 +29,9 @@ public class Application {
 
     public static void main(String[] args) {
         Dice fairDice, unfairDice;
-        int numberOfRounds, viterbiDicesCount = 0;
+        int numberOfRounds;
         boolean startWithFairDice;
         boolean inputFromFile;
-        List<Integer> observableSequence = new ArrayList<>();
         double fairDiceStartProbability = 0.0;
 
         // input data
@@ -60,11 +57,6 @@ public class Application {
             numberOfRounds = Integer.parseInt(content.get("rounds count"));
             startWithFairDice = content.get("start dice").trim().equalsIgnoreCase("fair");
 
-            viterbiDicesCount = Integer.parseInt(content.get("viterbi number"));
-            String[] sequence = content.get("viterbi dices").split(";");
-            for (int i = 0; i < viterbiDicesCount; i++) {
-                observableSequence.add(Integer.parseInt(sequence[i].trim()));
-            }
             fairDiceStartProbability = Double.parseDouble(content.get("fair start"));
 
         } else {
@@ -95,12 +87,6 @@ public class Application {
 
         // Viterbi
         if (!inputFromFile) {
-            System.out.println("Podaj liczbę rzutów kostką, a następnie wyniki: ");
-            viterbiDicesCount = sc.nextInt();
-            for (int i = 0; i < viterbiDicesCount; i++) {
-                observableSequence.add(sc.nextInt());
-            }
-
             System.out.println("Podaj prawdopodobieństwo rozpoczęcia gry kostką uczciwą: ");
             try {
                 fairDiceStartProbability = sc.nextDouble();
@@ -111,8 +97,11 @@ public class Application {
         }
 
         System.out.println("Rezultat działania algorytmu Viterbiego: ");
-        ViterbiAlgorithm va = new ViterbiAlgorithm(viterbiDicesCount, fairDice, unfairDice, observableSequence, fairDiceStartProbability);
-        va.createSequence();
+        ViterbiAlgorithm va = new ViterbiAlgorithm(numberOfRounds, fairDice, unfairDice, results, fairDiceStartProbability);
+        List <String> viterbiResults = va.createSequence();
+        for (int i = 0; i < results.size(); i++) {
+            System.out.println(results.get(i) + " : " + viterbiResults.get(i));
+        }
     }
 
     private static void printCountOfNumber(final Number num, final List<Integer> list) {
