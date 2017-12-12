@@ -1,13 +1,13 @@
 package pl.gda.edu.pg.bioinf;
 
-/*
+/**
 * Dane wejściowe do programu:
 * - prawdopodobieństwo zmiany kostki z uczciwej na fałszywą (to unfair dice)
 * - prawdopodobieństwo zmiany kostki z nieuczciwej na uczciwą (to fair dice)
 * - prawdopodobieństwa wyrzucenia każdej wartości na kostce, zaczynając od 1 (probability X)
 * - liczba losowań (rounds count)
 * - rozpoczynanie od uczciwej kostki (t/n) (start dice)
-* */
+* **/
 
 import pl.gda.edu.pg.bioinf.casino.Casino;
 import pl.gda.edu.pg.bioinf.casino.Croupier;
@@ -42,8 +42,10 @@ public class Application {
             // getting all input data from file content (in map)
             double fairProb = Double.parseDouble(content.get("to unfair dice"));
             fairDice = Dice.createFairDice(fairProb);
+
             double unFairProb = Double.parseDouble(content.get("to fair dice"));
             ArrayList<Double> unfairDiceProbabilityList = new ArrayList<>();
+
             for(int i = 1; i <= 6; i++) {
                 unfairDiceProbabilityList.add(Double.parseDouble(content.get("probability "+i)));
             }
@@ -53,6 +55,7 @@ public class Application {
         } else {
             fairDice = getArgumentsAndCreateFairDice(sc);
             if (fairDice == null) return;
+
             unfairDice = getArgumentsAndCreateUnfairDice(sc);
             if (unfairDice == null) return;
 
@@ -71,7 +74,17 @@ public class Application {
         Casino casino = new Casino(croupier);
         List <Integer> results = casino.playNRounds(numberOfRounds);
         System.out.println("Wyniki rzutów kostką: ");
-        results.forEach(System.out::println);
+        for (int i = 1; i <= 6; i++) {
+            printCountOfNumber(i, results);
+        }
+    }
+
+    private static void printCountOfNumber(final Number num, final List<Integer> list) {
+        int count = 0;
+        for(Integer number : list) {
+            if (Objects.equals(number, num)) count++;
+        }
+        System.out.println(num + ": " + count);
     }
 
     public static Map<String, String> getInputDataFromFile () {
