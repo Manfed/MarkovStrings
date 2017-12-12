@@ -49,8 +49,9 @@ public class Dice {
      * @return  The roll result
      */
     public Integer roll() {
+        double random = Math.random();
         for (Map.Entry<Integer, Double> entry: probabilityOfResults.entrySet()) {
-            if (entry.getValue() > Math.random()) {
+            if (entry.getValue() > random) {
                 return entry.getKey();
             }
         }

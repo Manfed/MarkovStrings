@@ -2,8 +2,8 @@ package pl.gda.edu.pg.bioinf;
 
 /*
 * Dane wejściowe do programu:
-* - prawdopodobieństwo zmiany kostki z uczciwej na fałszywą (fair dice)
-* - prawdopodobieństwo zmiany kostki z nieuczciwej na uczciwą (unfair dice)
+* - prawdopodobieństwo zmiany kostki z uczciwej na fałszywą (to unfair dice)
+* - prawdopodobieństwo zmiany kostki z nieuczciwej na uczciwą (to fair dice)
 * - prawdopodobieństwa wyrzucenia każdej wartości na kostce, zaczynając od 1 (probability X)
 * - liczba losowań (rounds count)
 * - rozpoczynanie od uczciwej kostki (t/n) (start dice)
@@ -15,6 +15,7 @@ import pl.gda.edu.pg.bioinf.casino.Dice;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -39,9 +40,9 @@ public class Application {
             if (content == null) return;
 
             // getting all input data from file content (in map)
-            double fairProb = Double.parseDouble(content.get("fair dice"));
+            double fairProb = Double.parseDouble(content.get("to unfair dice"));
             fairDice = Dice.createFairDice(fairProb);
-            double unFairProb = Double.parseDouble(content.get("unfair dice"));
+            double unFairProb = Double.parseDouble(content.get("to fair dice"));
             ArrayList<Double> unfairDiceProbabilityList = new ArrayList<>();
             for(int i = 1; i <= 6; i++) {
                 unfairDiceProbabilityList.add(Double.parseDouble(content.get("probability "+i)));
@@ -82,8 +83,11 @@ public class Application {
         try {
             Files.lines(inputFilePath)
                     .forEach(s -> content.put(s.split("=")[0].trim(), s.split("=")[1].trim()));
+        } catch (NoSuchFileException e) {
+            System.out.println("Nieprawidłowa ścieżka: " + e.getMessage());
+            return null;
         } catch (IOException e) {
-            System.out.println("Wystąpił wyjątek: " + e.getMessage());
+            System.out.println("Wystąpił wyjątek: " + e);
             return null;
         }
 
