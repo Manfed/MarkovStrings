@@ -69,10 +69,8 @@ public class Application {
         Croupier croupier = new Croupier(fairDice, unfairDice, startWithFairDice);
         Casino casino = new Casino(croupier);
         List <Integer> results = casino.playNRounds(numberOfRounds);
-        for (Integer r :
-                results) {
-            System.out.println(r);
-        }
+        System.out.println("Wyniki rzutów kostką: ");
+        results.forEach(System.out::println);
     }
 
     public static Map<String, String> getInputDataFromFile () {
