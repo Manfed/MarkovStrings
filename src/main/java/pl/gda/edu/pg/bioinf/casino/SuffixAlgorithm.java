@@ -2,12 +2,10 @@ package pl.gda.edu.pg.bioinf.casino;
 
 import pl.gda.edu.pg.bioinf.math.State;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 
-import static java.util.stream.Collectors.toMap;
+import static pl.gda.edu.pg.bioinf.math.State.FAIR_DICE;
 
 public class SuffixAlgorithm {
 
@@ -15,18 +13,95 @@ public class SuffixAlgorithm {
     private Dice loadedDice;
     private List<Integer> observedSequence;
 
-    private Map<State, List<Double>> probabilityOfSuffix;
+    //Probability of every roll state
+    private PrefixAlgorithm prefixAlgorithm;
+    private List<Double> probabilityOfStates;
+
+    private double[][] probabilityOfSuffix;
 
     public SuffixAlgorithm(Dice fairDice, Dice loadedDice, List<Integer> observedSequence) {
         this.fairDice = fairDice;
         this.loadedDice = loadedDice;
         this.observedSequence = observedSequence;
-        this.probabilityOfSuffix = initProbabilities(fairDice, loadedDice);
+        this.probabilityOfSuffix = new double[State.values().length][observedSequence.size()];
+        this.prefixAlgorithm = new PrefixAlgorithm(fairDice, loadedDice, observedSequence);
+        this.probabilityOfStates = new ArrayList<>();
     }
 
-    private Map<State, List<Double>> initProbabilities(Dice fairDice, Dice loadedDice) {
-        return Arrays.stream(State.values())
-                .collect(toMap(Function.identity(), state -> Arrays.asList(1.0)));
+    public double calculateProbability(int startIndex, State startState) {
+        if (startIndex > observedSequence.size()) {
+            throw new IllegalArgumentException("Start index too big");
+        }
+
+        //init last elements
+        for (State state : State.values()) {
+            probabilityOfSuffix[state.getNumber()][observedSequence.size() - 1] = 1.0;
+        }
+
+        for (int i = observedSequence.size() - 2; i >= 0; i--) {
+            for(State state: State.values()) {
+                probabilityOfSuffix[state.getNumber()][i] = computeNextProbability(i, state);
+            }
+        }
+
+        double probabilityOfGivenSuffixWhenParticularStateOnIndex = computeProbabilityOfSuffix();
+
+        computeProbableStateOfEveryElement(startState,
+                probabilityOfGivenSuffixWhenParticularStateOnIndex);
+
+        return probabilityOfGivenSuffixWhenParticularStateOnIndex;
+
+    }
+
+    private double computeNextProbability(int index, State state) {
+        return getDiceSwitchProbability(state) *
+                getEmissionProbability(state, index + 1) *
+                probabilityOfSuffix[state.getNumber()][index + 1];
+
+    }
+
+    private double getDiceSwitchProbability(State state) {
+        if (state.equals(FAIR_DICE)) {
+            return fairDice.getProbabilityOfDiceSwitch();
+        } else {
+            return loadedDice.getProbabilityOfDiceSwitch();
+        }
+    }
+
+    private double getEmissionProbability(State state, int index) {
+        if (state.equals(FAIR_DICE)) {
+            return fairDice.getProbabilities().get(index);
+        } else {
+            return loadedDice.getProbabilities().get(index);
+        }
+    }
+
+    private double computeProbabilityOfSuffix() {
+        double probability = .0;
+        for (State state : State.values()) {
+            probability += getDiceSwitchProbability(state) *
+                    getEmissionProbability(state, 0) *
+                    probabilityOfSuffix[state.getNumber()][0];
+        }
+
+        return probability;
+    }
+
+    private void computeProbableStateOfEveryElement(State startState, double probability) {
+        prefixAlgorithm.calculateProbability(startState);
+
+        System.out.println("Probability of states when started with " + startState);
+
+        List<Double> probabilitiesOfStates = new ArrayList<>();
+
+        for (int i = 0; i < probabilityOfSuffix[startState.getNumber()].length; i++) {
+            probabilitiesOfStates.add(
+                    (prefixAlgorithm.getProbabilityMatrix()[startState.getNumber()][i]*
+                            probabilityOfSuffix[startState.getNumber()][i]) /
+                            probability);
+
+            System.out.println(i + 1 + ": " + probabilitiesOfStates.get(i));
+        }
     }
 
     public Dice getFairDice() {
