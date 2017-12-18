@@ -42,11 +42,12 @@ public class PrefixAlgorithm {
     private double computeNextProbability(int index, State state) {
         double prob = .0;
         for (State stateX : State.values()) {
-            prob += sumOfColumn(index - 1) *
+            /*prob += sumOfColumn(index - 1) *
                     probabilityOfEmission(state, observedSequence.get(index)) *
-                    (state.equals(stateX) ? 1 - probabilityOfStateChange(state) : probabilityOfStateChange(state));
+                    (state.equals(stateX) ? 1 - probabilityOfStateChange(state) : probabilityOfStateChange(state));*/
+            prob += probabilityMatrix[stateX.getNumber()][index - 1] * probabilityOfStateChange(stateX);
         }
-        return prob;
+        return prob * probabilityOfEmission(state, observedSequence.get(index));
     }
 
     private double sumOfColumn(int columnNumber) {
