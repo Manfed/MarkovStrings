@@ -11,13 +11,7 @@ package pl.gda.edu.pg.bioinf;
  * - prawdopodobieństwo rozpoczęcia gry kostką uczciwą (fair start)
 * **/
 
-import pl.gda.edu.pg.bioinf.casino.Casino;
-import pl.gda.edu.pg.bioinf.casino.Croupier;
-import pl.gda.edu.pg.bioinf.casino.Dice;
-import pl.gda.edu.pg.bioinf.casino.PrefixAlgorithm;
-import pl.gda.edu.pg.bioinf.casino.SuffixAlgorithm;
-import pl.gda.edu.pg.bioinf.casino.ViterbiAlgorithm;
-import pl.gda.edu.pg.bioinf.math.State;
+import pl.gda.edu.pg.bioinf.casino.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -83,10 +77,10 @@ public class Application {
         Croupier croupier = new Croupier(fairDice, unfairDice, startWithFairDice);
         Casino casino = new Casino(croupier);
         List <Integer> results = casino.playNRounds(numberOfRounds);
-        System.out.println("Wyniki rzutów kostką: ");
-        for (int i = 1; i <= 6; i++) {
-            printCountOfNumber(i, results);
-        }
+//        System.out.println("Wyniki rzutów kostką: ");
+//        for (int i = 1; i <= 6; i++) {
+//            printCountOfNumber(i, results);
+//        }
 
         // Viterbi
         if (!inputFromFile) {
@@ -98,34 +92,35 @@ public class Application {
                 return;
             }
         }
-
-        ViterbiAlgorithm va = new ViterbiAlgorithm(numberOfRounds, fairDice, unfairDice, results, fairDiceStartProbability);
+        BWAlgorithm bw = new BWAlgorithm(numberOfRounds, results);
+//        ViterbiAlgorithm va = new ViterbiAlgorithm(numberOfRounds, fairDice, unfairDice, results, fairDiceStartProbability);
         List <String> casinoDices = croupier.getDices();
-        List <String> viterbiResults = va.createSequence();
-        System.out.println("Rezultat działania algorytmu Viterbiego: ");
-        System.out.println("liczba oczek na kostce : rzeczywistość : Viterbi");
-        for (int i = 0; i < results.size(); i++) {
-            System.out.println(results.get(i) + " : " +casinoDices.get(i) + " : " + viterbiResults.get(i));
-        }
-
-        //Prefix
-        PrefixAlgorithm prefixAlgorithm = new PrefixAlgorithm(fairDice, unfairDice, results);
-        //Start kostką uczciwą
-        prefixAlgorithm.calculateProbability(State.FAIR_DICE);
-        System.out.println("Macierz prawdopodobieństw dla algorytmu prefiksowego (kostka uczciwa):");
-        System.out.println(Arrays.deepToString(prefixAlgorithm.getProbabilityMatrix()));
-
-        prefixAlgorithm = new PrefixAlgorithm(fairDice, unfairDice, results);
-        //Start kostką nieuczciwą
-        prefixAlgorithm.calculateProbability(State.UNFAIR_DICE);
-        System.out.println("Macierz prawdopodobieństw dla algorytmu prefiksowego (kostka nieuczciwa):");
-        System.out.println(Arrays.deepToString(prefixAlgorithm.getProbabilityMatrix()));
-
-        //Suffix
-        SuffixAlgorithm suffixAlgorithm = new SuffixAlgorithm(fairDice, unfairDice, results);
-
-        System.out.println("Macierz prawdopodobieństw dla algorytmu sufiksowego (kostka uczciwa, start w połowie listy wynikowej):");
-        suffixAlgorithm.calculateProbability(results.size() / 2, State.FAIR_DICE);
+        bw.runAlgorithm();
+//        List <String> viterbiResults = va.createSequence();
+//        System.out.println("Rezultat działania algorytmu Viterbiego: ");
+//        System.out.println("liczba oczek na kostce : rzeczywistość : Viterbi");
+//        for (int i = 0; i < results.size(); i++) {
+//            System.out.println(results.get(i) + " : " +casinoDices.get(i) + " : " + viterbiResults.get(i));
+//        }
+//
+//        //Prefix
+//        PrefixAlgorithm prefixAlgorithm = new PrefixAlgorithm(fairDice, unfairDice, results);
+//        //Start kostką uczciwą
+//        prefixAlgorithm.calculateProbability(State.FAIR_DICE);
+//        System.out.println("Macierz prawdopodobieństw dla algorytmu prefiksowego (kostka uczciwa):");
+//        System.out.println(Arrays.deepToString(prefixAlgorithm.getProbabilityMatrix()));
+//
+//        prefixAlgorithm = new PrefixAlgorithm(fairDice, unfairDice, results);
+//        //Start kostką nieuczciwą
+//        prefixAlgorithm.calculateProbability(State.UNFAIR_DICE);
+//        System.out.println("Macierz prawdopodobieństw dla algorytmu prefiksowego (kostka nieuczciwa):");
+//        System.out.println(Arrays.deepToString(prefixAlgorithm.getProbabilityMatrix()));
+//
+//        //Suffix
+//        SuffixAlgorithm suffixAlgorithm = new SuffixAlgorithm(fairDice, unfairDice, results);
+//
+//        System.out.println("Macierz prawdopodobieństw dla algorytmu sufiksowego (kostka uczciwa, start w połowie listy wynikowej):");
+//        suffixAlgorithm.calculateProbability(results.size() / 2, State.FAIR_DICE);
     }
 
     private static void printCountOfNumber(final Number num, final List<Integer> list) {
@@ -188,5 +183,14 @@ public class Application {
         }
 
         return new Dice (unfairDiceProbabilityList, probabilityOfUnfairDiceSwitch);
+    }
+
+    public static void printMatrix(double[][] matrix) {
+        for (int  i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println();
+        }
     }
 }

@@ -1,31 +1,37 @@
 package pl.gda.edu.pg.bioinf.casino;
 
+import pl.gda.edu.pg.bioinf.Application;
 import pl.gda.edu.pg.bioinf.math.State;
 
 import java.util.List;
+
+import static java.lang.Math.abs;
 
 public class BWAlgorithm {
     private List<Integer> observableSequence;
     private int observableSequenceLength;
     private static final int NUMBER_OF_STATES = State.values().length; //fair dice, unfair dice
     private static final int NUMBER_OF_SYMBOLS = 6;
-    private static final double MAX_PROBABILITY = 1.0;
 
     private double[] startProbabilityInState;
     private double[][] changingHMMStateMatrix;
     private double[][] stateEmissionMatrix;
     private double[][] alphaMatrix;
     private double[][] betaMatrix;
+    private double[][][] gamma3DMatrix;
+    private double[][] gammaMatrix;
 
-    public BWAlgorithm(int numberOfRounds, Dice fairDice, Dice unfairDice, List<Integer> observableSequence, double fairStartProbability) {
+    private double maxProbability = 0.0;
+
+    public BWAlgorithm(int numberOfRounds, List<Integer> observableSequence) {
         this.observableSequence = observableSequence;
         this.observableSequenceLength = numberOfRounds;
-        createChangingHMMStateMatrix(fairDice.getProbabilityOfDiceSwitch(), unfairDice.getProbabilityOfDiceSwitch());
-        createStateEmissionMatrix(fairDice, unfairDice);
-        createStartProbabilityInStateMatrix(fairStartProbability);
+        createChangingHMMStateMatrix();
+        createStateEmissionMatrix();
+        createStartProbabilityInStateMatrix();
     }
 
-    private void createChangingHMMStateMatrix(double changingStateProbabilityFromFair, double changingStateProbabilityFromUnfair) {
+    private void createChangingHMMStateMatrix() {
         changingHMMStateMatrix = new double[NUMBER_OF_STATES][NUMBER_OF_STATES];
 
         for (State s1 : State.values()) {
@@ -33,49 +39,127 @@ public class BWAlgorithm {
                 int idx1 = s1.getNumber();
                 int idx2 = s2.getNumber();
                 if (s1.equals(s2) && s1.equals(State.FAIR_DICE)) {
-                    changingHMMStateMatrix[idx1][idx2] = MAX_PROBABILITY - changingStateProbabilityFromFair;
+                    changingHMMStateMatrix[idx1][idx2] = 0.7;
                 } else if (s1.equals(s2) && s1.equals(State.UNFAIR_DICE)) {
-                    changingHMMStateMatrix[idx1][idx2] = MAX_PROBABILITY - changingStateProbabilityFromUnfair;
+                    changingHMMStateMatrix[idx1][idx2] = 0.2;
                 } else if (s1.equals(State.FAIR_DICE)) {
-                    changingHMMStateMatrix[idx1][idx2] = changingStateProbabilityFromFair;
+                    changingHMMStateMatrix[idx1][idx2] = 0.3;
                 } else {
-                    changingHMMStateMatrix[idx1][idx2] = changingStateProbabilityFromUnfair;
+                    changingHMMStateMatrix[idx1][idx2] = 0.8;
                 }
             }
         }
     }
 
-    private void createStateEmissionMatrix(Dice fairDice, Dice unfairDice) {
+    private void createStateEmissionMatrix() {
         stateEmissionMatrix = new double[NUMBER_OF_STATES][NUMBER_OF_SYMBOLS];
 
         for (State s : State.values()) {
-            Dice dice;
-            if (s.equals(State.FAIR_DICE)) {
-                dice = fairDice;
-            } else {
-                dice = unfairDice;
-            }
             for (int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
-                stateEmissionMatrix[s.getNumber()][i] = dice.getProbabilities().get(i);
+                stateEmissionMatrix[s.getNumber()][i] = 0.5;
             }
         }
     }
 
-    private void createStartProbabilityInStateMatrix(double fairStartProbability) {
+    private void createStartProbabilityInStateMatrix() {
         startProbabilityInState = new double[NUMBER_OF_STATES];
 
-        for (State s : State.values()) {
-            if (s.equals(State.FAIR_DICE)) {
-                startProbabilityInState[s.getNumber()] = fairStartProbability;
-            } else {
-                startProbabilityInState[s.getNumber()] = MAX_PROBABILITY  - fairStartProbability;
-            }
-        }
+        startProbabilityInState[State.FAIR_DICE.getNumber()] = 0.9;
+        startProbabilityInState[State.UNFAIR_DICE.getNumber()] = 0.1;
     }
 
     public void runAlgorithm() {
-        alphaPass();
-        betaPass();
+        for (int i = 0; i < 100; i++) {
+            alphaPass();
+            betaPass();
+            gammaPass();
+            reestimatation();
+            double probability = calculateProbability();
+            System.out.println(maxProbability + " " + probability);
+            if (Double.isNaN(maxProbability - probability)|| abs(maxProbability - probability) <= 1e-10) {
+                break;
+            }
+            maxProbability = probability;
+        }
+        System.out.println("New state emission matrix: ");
+        Application.printMatrix(stateEmissionMatrix);
+    }
+
+    private void reestimatation() {
+        startProbabilityInStateReestimation();
+        changingHMMStateMatrixReestimation();
+        stateEmissionMatrixReestimation();
+    }
+
+    private void stateEmissionMatrixReestimation() {
+        for (int j = 0; j < NUMBER_OF_STATES; j++) {
+            for (int k = 0; k < NUMBER_OF_SYMBOLS; k++) {
+                double sumGamma = 0.0;
+                double sumCondition = 0.0;
+
+                for (int t = 0; t < observableSequenceLength - 1; t++) {
+                    sumGamma += gammaMatrix[t][j];
+                    if (observableSequence.get(t) - 1 == k) {
+                        sumCondition += gammaMatrix[t][j];
+                    }
+                }
+                stateEmissionMatrix[j][k] = sumCondition / sumGamma;
+            }
+        }
+    }
+
+    private void changingHMMStateMatrixReestimation() {
+        for (int i = 0; i < NUMBER_OF_STATES; i++) {
+            for (int j = 0; j < NUMBER_OF_STATES; j++) {
+                double sumGamma = 0.0;
+                double sumGamma3D  = 0.0;
+
+                for (int t = 0; t < observableSequenceLength - 1; t++) {
+                    sumGamma += gammaMatrix[t][i];
+                    sumGamma3D += gamma3DMatrix[t][i][j];
+                }
+                changingHMMStateMatrix[i][j] = sumGamma3D / sumGamma;
+            }
+        }
+    }
+
+    private void startProbabilityInStateReestimation() {
+        System.arraycopy(gammaMatrix[0], 0, startProbabilityInState, 0, NUMBER_OF_STATES);
+    }
+
+    private void gammaPass() {
+        gamma3DMatrix = new double [observableSequenceLength][NUMBER_OF_STATES][NUMBER_OF_STATES];
+        gammaMatrix = new double[observableSequenceLength][NUMBER_OF_STATES];
+        for (int t = 0; t < observableSequenceLength-1; t++) {
+            double denominator = calculateDenominator(t);
+            for (int i = 0; i < NUMBER_OF_STATES; i++) {
+                for (int j = 0; j < NUMBER_OF_STATES; j++) {
+                    gamma3DMatrix[t][i][j] = alphaMatrix[t][i] * changingHMMStateMatrix[i][j] * stateEmissionMatrix[j][observableSequence.get(t + 1) - 1] * betaMatrix[t+1][j] / maxProbability;
+                    gammaMatrix[t][i] += gamma3DMatrix[t][i][j];
+                }
+            }
+        }
+    }
+
+    private double calculateDenominator(int t) {
+        double result = 0.0;
+
+        for (int i = 0; i < NUMBER_OF_STATES; i++) {
+            for (int j = 0; j < NUMBER_OF_STATES; j++) {
+                result = alphaMatrix[t][i] * changingHMMStateMatrix[i][j] * stateEmissionMatrix[j][observableSequence.get(t + 1) - 1] * betaMatrix[t+1][j];
+            }
+        }
+
+        return result;
+    }
+
+    private double calculateProbability() {
+        double sum = 0.0;
+        for (int i = 0; i < NUMBER_OF_STATES; i++) {
+            sum += alphaMatrix[observableSequenceLength - 1][i];
+        }
+
+        return sum;
     }
 
     private void betaPass() {
@@ -89,7 +173,7 @@ public class BWAlgorithm {
             for (int i = 0; i < NUMBER_OF_STATES; i++) {
                 double sum = 0.0;
                 for (int j = 0; j < NUMBER_OF_STATES; j++) {
-                    sum += changingHMMStateMatrix[i][j] * stateEmissionMatrix[j][observableSequence.get(j)]* betaMatrix[t+1][j];
+                    sum += changingHMMStateMatrix[i][j] * stateEmissionMatrix[j][observableSequence.get(j) - 1]* betaMatrix[t+1][j];
                 }
                 betaMatrix[t][i] = sum;
             }
