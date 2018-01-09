@@ -3,6 +3,7 @@ package pl.gda.edu.pg.bioinf.casino;
 import pl.gda.edu.pg.bioinf.Application;
 import pl.gda.edu.pg.bioinf.math.State;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Math.abs;
@@ -21,7 +22,7 @@ public class BWAlgorithm {
     private double[][][] gamma3DMatrix;
     private double[][] gammaMatrix;
 
-    private double maxProbability = 0.0;
+    private double maxProbability = 1.0;
 
     public BWAlgorithm(int numberOfRounds, List<Integer> observableSequence) {
         this.observableSequence = observableSequence;
@@ -55,9 +56,12 @@ public class BWAlgorithm {
         stateEmissionMatrix = new double[NUMBER_OF_STATES][NUMBER_OF_SYMBOLS];
 
         for (State s : State.values()) {
-            for (int i = 0; i < NUMBER_OF_SYMBOLS; i++) {
-                stateEmissionMatrix[s.getNumber()][i] = 0.5;
-            }
+            stateEmissionMatrix[s.getNumber()][0] = 0.15;
+            stateEmissionMatrix[s.getNumber()][1] = 0.2;
+            stateEmissionMatrix[s.getNumber()][2] = 0.25;
+            stateEmissionMatrix[s.getNumber()][3] = 0.05;
+            stateEmissionMatrix[s.getNumber()][4] = 0.1;
+            stateEmissionMatrix[s.getNumber()][5] = 0.25;
         }
     }
 
@@ -69,20 +73,26 @@ public class BWAlgorithm {
     }
 
     public void runAlgorithm() {
-        for (int i = 0; i < 100; i++) {
+        System.out.println("Old state emission matrix: ");
+        Application.printMatrix(stateEmissionMatrix);
+        System.out.println("Old state changing matrix: ");
+        Application.printMatrix(changingHMMStateMatrix);
+        System.out.println("Sequence: " + observableSequence);
+        for (int i = 0; i < 1000; i++) {
             alphaPass();
             betaPass();
-            gammaPass();
-            reestimatation();
             double probability = calculateProbability();
-            System.out.println(maxProbability + " " + probability);
-            if (Double.isNaN(maxProbability - probability)|| abs(maxProbability - probability) <= 1e-10) {
+            if (Double.isNaN(maxProbability - probability) || abs(maxProbability - probability) <= 1e-20) {
                 break;
             }
             maxProbability = probability;
+            gammaPass();
+            reestimatation();
         }
         System.out.println("New state emission matrix: ");
         Application.printMatrix(stateEmissionMatrix);
+        System.out.println("New state changing matrix: ");
+        Application.printMatrix(changingHMMStateMatrix);
     }
 
     private void reestimatation() {
@@ -131,7 +141,6 @@ public class BWAlgorithm {
         gamma3DMatrix = new double [observableSequenceLength][NUMBER_OF_STATES][NUMBER_OF_STATES];
         gammaMatrix = new double[observableSequenceLength][NUMBER_OF_STATES];
         for (int t = 0; t < observableSequenceLength-1; t++) {
-            double denominator = calculateDenominator(t);
             for (int i = 0; i < NUMBER_OF_STATES; i++) {
                 for (int j = 0; j < NUMBER_OF_STATES; j++) {
                     gamma3DMatrix[t][i][j] = alphaMatrix[t][i] * changingHMMStateMatrix[i][j] * stateEmissionMatrix[j][observableSequence.get(t + 1) - 1] * betaMatrix[t+1][j] / maxProbability;
@@ -139,18 +148,6 @@ public class BWAlgorithm {
                 }
             }
         }
-    }
-
-    private double calculateDenominator(int t) {
-        double result = 0.0;
-
-        for (int i = 0; i < NUMBER_OF_STATES; i++) {
-            for (int j = 0; j < NUMBER_OF_STATES; j++) {
-                result = alphaMatrix[t][i] * changingHMMStateMatrix[i][j] * stateEmissionMatrix[j][observableSequence.get(t + 1) - 1] * betaMatrix[t+1][j];
-            }
-        }
-
-        return result;
     }
 
     private double calculateProbability() {
