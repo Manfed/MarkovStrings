@@ -3,10 +3,7 @@ package pl.gda.edu.pg.bioinf.casino;
 import pl.gda.edu.pg.bioinf.Application;
 import pl.gda.edu.pg.bioinf.math.State;
 
-import java.util.Arrays;
 import java.util.List;
-
-import static java.lang.Math.abs;
 
 public class BWAlgorithm {
     private List<Integer> observableSequence;
@@ -40,13 +37,13 @@ public class BWAlgorithm {
                 int idx1 = s1.getNumber();
                 int idx2 = s2.getNumber();
                 if (s1.equals(s2) && s1.equals(State.FAIR_DICE)) {
-                    changingHMMStateMatrix[idx1][idx2] = 0.7;
+                    changingHMMStateMatrix[idx1][idx2] = 0.95;
                 } else if (s1.equals(s2) && s1.equals(State.UNFAIR_DICE)) {
-                    changingHMMStateMatrix[idx1][idx2] = 0.2;
+                    changingHMMStateMatrix[idx1][idx2] = 0.95;
                 } else if (s1.equals(State.FAIR_DICE)) {
-                    changingHMMStateMatrix[idx1][idx2] = 0.3;
+                    changingHMMStateMatrix[idx1][idx2] = 0.05;
                 } else {
-                    changingHMMStateMatrix[idx1][idx2] = 0.8;
+                    changingHMMStateMatrix[idx1][idx2] = 0.05;
                 }
             }
         }
@@ -55,14 +52,27 @@ public class BWAlgorithm {
     private void createStateEmissionMatrix() {
         stateEmissionMatrix = new double[NUMBER_OF_STATES][NUMBER_OF_SYMBOLS];
 
-        for (State s : State.values()) {
-            stateEmissionMatrix[s.getNumber()][0] = 0.15;
-            stateEmissionMatrix[s.getNumber()][1] = 0.2;
-            stateEmissionMatrix[s.getNumber()][2] = 0.25;
-            stateEmissionMatrix[s.getNumber()][3] = 0.05;
-            stateEmissionMatrix[s.getNumber()][4] = 0.1;
-            stateEmissionMatrix[s.getNumber()][5] = 0.25;
-        }
+//        for (State s : State.values()) {
+//            stateEmissionMatrix[s.getNumber()][0] = 0.15;
+//            stateEmissionMatrix[s.getNumber()][1] = 0.2;
+//            stateEmissionMatrix[s.getNumber()][2] = 0.25;
+//            stateEmissionMatrix[s.getNumber()][3] = 0.05;
+//            stateEmissionMatrix[s.getNumber()][4] = 0.1;
+//            stateEmissionMatrix[s.getNumber()][5] = 0.25;
+//        }
+        stateEmissionMatrix[0][0] = 0.15;
+        stateEmissionMatrix[0][1] = 0.2;
+        stateEmissionMatrix[0][2] = 0.25;
+        stateEmissionMatrix[0][3] = 0.05;
+        stateEmissionMatrix[0][4] = 0.1;
+        stateEmissionMatrix[0][5] = 0.25;
+
+        stateEmissionMatrix[1][0] = 0.07;
+        stateEmissionMatrix[1][1] = 0.03;
+        stateEmissionMatrix[1][2] = 0.05;
+        stateEmissionMatrix[1][3] = 0.05;
+        stateEmissionMatrix[1][4] = 0.1;
+        stateEmissionMatrix[1][5] = 0.7;
     }
 
     private void createStartProbabilityInStateMatrix() {
@@ -78,11 +88,11 @@ public class BWAlgorithm {
         System.out.println("Old state changing matrix: ");
         Application.printMatrix(changingHMMStateMatrix);
         System.out.println("Sequence: " + observableSequence);
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 50000; i++) {
             alphaPass();
             betaPass();
             double probability = calculateProbability();
-            if (Double.isNaN(maxProbability - probability) || abs(maxProbability - probability) <= 1e-20) {
+            if (Double.isNaN(maxProbability - probability) || maxProbability - probability < 1e-20) {
                 break;
             }
             maxProbability = probability;
