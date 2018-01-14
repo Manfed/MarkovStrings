@@ -19,7 +19,7 @@ public class BWAlgorithm {
     private double[][][] gamma3DMatrix;
     private double[][] gammaMatrix;
 
-    private double maxProbability = 1.0;
+    private double maxProbability = 2.0;
 
     public BWAlgorithm(int numberOfRounds, List<Integer> observableSequence) {
         this.observableSequence = observableSequence;
@@ -29,37 +29,28 @@ public class BWAlgorithm {
         createStartProbabilityInStateMatrix();
     }
 
+    public BWAlgorithm(int observableSequenceLength) {
+        this.observableSequenceLength = observableSequenceLength;
+        createChangingHMMStateMatrix();
+        createStateEmissionMatrix();
+        createStartProbabilityInStateMatrix();
+    }
+
     private void createChangingHMMStateMatrix() {
         changingHMMStateMatrix = new double[NUMBER_OF_STATES][NUMBER_OF_STATES];
-
-        for (State s1 : State.values()) {
-            for (State s2 : State.values()) {
-                int idx1 = s1.getNumber();
-                int idx2 = s2.getNumber();
-                if (s1.equals(s2) && s1.equals(State.FAIR_DICE)) {
-                    changingHMMStateMatrix[idx1][idx2] = 0.95;
-                } else if (s1.equals(s2) && s1.equals(State.UNFAIR_DICE)) {
-                    changingHMMStateMatrix[idx1][idx2] = 0.95;
-                } else if (s1.equals(State.FAIR_DICE)) {
-                    changingHMMStateMatrix[idx1][idx2] = 0.05;
-                } else {
-                    changingHMMStateMatrix[idx1][idx2] = 0.05;
-                }
-            }
-        }
+        State s1 = State.FAIR_DICE;
+        State s2 = State.UNFAIR_DICE;
+        int idx1 = s1.getNumber();
+        int idx2 = s2.getNumber();
+        changingHMMStateMatrix[idx1][idx1] = 0.95;
+        changingHMMStateMatrix[idx2][idx2] = 0.95;
+        changingHMMStateMatrix[idx1][idx2] = 0.05;
+        changingHMMStateMatrix[idx2][idx1] = 0.05;
     }
 
     private void createStateEmissionMatrix() {
         stateEmissionMatrix = new double[NUMBER_OF_STATES][NUMBER_OF_SYMBOLS];
 
-//        for (State s : State.values()) {
-//            stateEmissionMatrix[s.getNumber()][0] = 0.15;
-//            stateEmissionMatrix[s.getNumber()][1] = 0.2;
-//            stateEmissionMatrix[s.getNumber()][2] = 0.25;
-//            stateEmissionMatrix[s.getNumber()][3] = 0.05;
-//            stateEmissionMatrix[s.getNumber()][4] = 0.1;
-//            stateEmissionMatrix[s.getNumber()][5] = 0.25;
-//        }
         stateEmissionMatrix[0][0] = 0.15;
         stateEmissionMatrix[0][1] = 0.2;
         stateEmissionMatrix[0][2] = 0.25;
@@ -82,22 +73,19 @@ public class BWAlgorithm {
         startProbabilityInState[State.UNFAIR_DICE.getNumber()] = 0.1;
     }
 
-    public void runAlgorithm() {
-        System.out.println("Old state emission matrix: ");
-        Application.printMatrix(stateEmissionMatrix);
-        System.out.println("Old state changing matrix: ");
-        Application.printMatrix(changingHMMStateMatrix);
-        System.out.println("Sequence: " + observableSequence);
+    public void runAlgorithm(List<Integer> results) {
+        this.observableSequence = results;
+        maxProbability = 2.0;
 //        System.out.println("Old state emission matrix: ");
 //        Application.printMatrix(stateEmissionMatrix);
 //        System.out.println("Old state changing matrix: ");
 //        Application.printMatrix(changingHMMStateMatrix);
 //        System.out.println("Sequence: " + observableSequence);
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10000; i++) {
             alphaPass();
             betaPass();
             double probability = calculateProbability();
-            if (Double.isNaN(maxProbability - probability) || maxProbability - probability < 1e-20) {
+            if (Double.isNaN(maxProbability - probability) || probability < 1e-300  || maxProbability - probability < 1e-100) {
                 break;
             }
             maxProbability = probability;
@@ -149,6 +137,8 @@ public class BWAlgorithm {
     }
 
     private void startProbabilityInStateReestimation() {
+        //startProbabilityInState[State.FAIR_DICE.getNumber()] = gammaMatrix[0][State.FAIR_DICE.getNumber()] / (gammaMatrix[0][State.FAIR_DICE.getNumber()] + gammaMatrix[0][State.UNFAIR_DICE.getNumber()]);
+        //startProbabilityInState[State.UNFAIR_DICE.getNumber()] = gammaMatrix[0][State.UNFAIR_DICE.getNumber()] / (gammaMatrix[0][State.FAIR_DICE.getNumber()] + gammaMatrix[0][State.UNFAIR_DICE.getNumber()]);
         System.arraycopy(gammaMatrix[0], 0, startProbabilityInState, 0, NUMBER_OF_STATES);
     }
 

@@ -88,15 +88,15 @@ public class Application {
                 return;
             }
         }
+        BWAlgorithm bw = new BWAlgorithm(numberOfRounds);
         //creating cassino and play rounds
         for (int i = 0; i < 100; i++) {
             Croupier croupier = new Croupier(fairDice, unfairDice, fairDiceStartProbability);
             Casino casino = new Casino(croupier);
             List<Integer> results = casino.playNRounds(numberOfRounds);
-            BWAlgorithm bw = new BWAlgorithm(numberOfRounds, results);
 //        ViterbiAlgorithm va = new ViterbiAlgorithm(numberOfRounds, fairDice, unfairDice, results, fairDiceStartProbability);
 //            List<String> casinoDices = croupier.getDices();
-            bw.runAlgorithm();
+            bw.runAlgorithm(results);
         }
 //        List <String> viterbiResults = va.createSequence();
 //        System.out.println("Rezultat działania algorytmu Viterbiego: ");
