@@ -68,15 +68,11 @@ public class Application {
             numberOfRounds = sc.nextInt();
 
             //start with fair Dice?
-            System.out.println("Czy chcesz rozpocząć od uczciwej kostki? T/N");
-            Pattern dicePattern = Pattern.compile("[tTnN]");
-            startWithFairDice = "t".equalsIgnoreCase(sc.next(dicePattern));
+//            System.out.println("Czy chcesz rozpocząć od uczciwej kostki? T/N");
+//            Pattern dicePattern = Pattern.compile("[tTnN]");
+//            startWithFairDice = "t".equalsIgnoreCase(sc.next(dicePattern));
         }
 
-        //creating cassino and play rounds
-        Croupier croupier = new Croupier(fairDice, unfairDice, startWithFairDice);
-        Casino casino = new Casino(croupier);
-        List <Integer> results = casino.playNRounds(numberOfRounds);
 //        System.out.println("Wyniki rzutów kostką: ");
 //        for (int i = 1; i <= 6; i++) {
 //            printCountOfNumber(i, results);
@@ -92,10 +88,16 @@ public class Application {
                 return;
             }
         }
-        BWAlgorithm bw = new BWAlgorithm(numberOfRounds, results);
+        //creating cassino and play rounds
+        for (int i = 0; i < 100; i++) {
+            Croupier croupier = new Croupier(fairDice, unfairDice, fairDiceStartProbability);
+            Casino casino = new Casino(croupier);
+            List<Integer> results = casino.playNRounds(numberOfRounds);
+            BWAlgorithm bw = new BWAlgorithm(numberOfRounds, results);
 //        ViterbiAlgorithm va = new ViterbiAlgorithm(numberOfRounds, fairDice, unfairDice, results, fairDiceStartProbability);
-        List <String> casinoDices = croupier.getDices();
-        bw.runAlgorithm();
+//            List<String> casinoDices = croupier.getDices();
+            bw.runAlgorithm();
+        }
 //        List <String> viterbiResults = va.createSequence();
 //        System.out.println("Rezultat działania algorytmu Viterbiego: ");
 //        System.out.println("liczba oczek na kostce : rzeczywistość : Viterbi");

@@ -73,11 +73,11 @@ public class BWAlgorithm {
     }
 
     public void runAlgorithm() {
-        System.out.println("Old state emission matrix: ");
-        Application.printMatrix(stateEmissionMatrix);
-        System.out.println("Old state changing matrix: ");
-        Application.printMatrix(changingHMMStateMatrix);
-        System.out.println("Sequence: " + observableSequence);
+//        System.out.println("Old state emission matrix: ");
+//        Application.printMatrix(stateEmissionMatrix);
+//        System.out.println("Old state changing matrix: ");
+//        Application.printMatrix(changingHMMStateMatrix);
+//        System.out.println("Sequence: " + observableSequence);
         for (int i = 0; i < 1000; i++) {
             alphaPass();
             betaPass();

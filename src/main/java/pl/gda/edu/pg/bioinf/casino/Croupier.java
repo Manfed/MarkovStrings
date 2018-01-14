@@ -15,6 +15,17 @@ public class Croupier {
         this.fairDiceInGame = fairDiceInGame;
     }
 
+    public Croupier(Dice fairDice, Dice loadedDice, double fairDiceStartProbability) {
+        this.fairDice = fairDice;
+        this.loadedDice = loadedDice;
+        double random = Math.random();
+        if (random > fairDiceStartProbability) {
+            this.fairDiceInGame = false;
+        } else {
+            this.fairDiceInGame = true;
+        }
+    }
+
     public Integer performRound() {
         Integer result = rollDice();
         swapDices();
